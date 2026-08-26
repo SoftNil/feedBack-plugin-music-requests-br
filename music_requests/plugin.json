@@ -1,0 +1,16 @@
+{
+  "id": "music_requests",
+  "name": "Music Requests",
+  "version": "1.0.0",
+  "bundled": true,
+  "description": "Plugin para gerenciamento de pedidos de música.",
+  "type": "visualization",
+  "category": "utilities",
+  "nav": {
+    "label": "Pedidos",
+    "screen": "plugin-music_requests"
+  },
+  "screen": "screen.html",
+  "script": "screen.js",
+  "routes": "routes.py"
+}
