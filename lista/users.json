@@ -9,6 +9,11 @@
             "usuario": "Dudu Montz",
             "password_hash": "pbkdf2:sha256:100000$fd850ec8d16ae4b51584af95433c6545$8ab4cac229b17ac978b0138b9928530d8c1ae228f2ebd841c35443c1e7420de0",
             "created_at": "2026-08-26T17:06:53"
+        },
+        "noob": {
+            "usuario": "Noob",
+            "password_hash": "pbkdf2:sha256:100000$fafd27b34fe98dcc81568ab3d66093a8$05100a801fd0297578c462d3dff9adc6e02c3df441c7694d6dbb893950329bf7",
+            "created_at": "2026-08-27T18:41:44"
         }
     }
 }

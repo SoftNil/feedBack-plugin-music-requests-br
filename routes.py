@@ -1413,6 +1413,55 @@ def setup(app: FastAPI, context: dict) -> None:
             }
         )
 
+    @app.post(f"{API}/reset/{{request_id}}")
+    async def reset_request_endpoint(request_id: int) -> JSONResponse:
+        """Revert a request's status back to 'pending'."""
+        with file_lock:
+            data = _read_requests_data()
+            requests_list = data.get("requests", [])
+
+            target_req = None
+            for req in requests_list:
+                if isinstance(req, dict) and (req.get("id") == request_id or str(req.get("id")) == str(request_id)):
+                    target_req = req
+                    break
+
+            if target_req is None:
+                return _cors_response(
+                    status_code=404,
+                    content={
+                        "success": False,
+                        "ok": False,
+                        "error": f"Pedido #{request_id} não encontrado."
+                    }
+                )
+
+            target_req["status"] = "pending"
+            data["requests"] = requests_list
+
+            try:
+                _save_requests_data(data)
+            except Exception as exc:
+                log.exception(f"{PLUGIN_LABEL}: Erro ao salvar lista após reverter pedido #{request_id}: {exc}")
+                return _cors_response(
+                    status_code=500,
+                    content={
+                        "success": False,
+                        "ok": False,
+                        "error": "Erro interno ao reverter status do pedido."
+                    }
+                )
+
+        log.info(f"{PLUGIN_LABEL}: Pedido #{request_id} revertido para pendente.")
+        return _cors_response(
+            status_code=200,
+            content={
+                "success": True,
+                "message": "Pedido revertido para pendente com sucesso!",
+                "request": target_req
+            }
+        )
+
     # ── Configuration Endpoints ─────────────────────────────────────────────
 
     @app.get(f"{API}/config")

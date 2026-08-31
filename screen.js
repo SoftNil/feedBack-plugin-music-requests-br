@@ -115,29 +115,22 @@
                 statusBadge = '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm shadow-emerald-950/40"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>Tocando</span>';
                 rowClass = 'bg-emerald-950/25 border-l-4 border-l-emerald-500 hover:bg-emerald-950/40 transition-colors';
                 playBtnHtml = `
-                  <button disabled
-                          title="Esta música já está tocando na pista"
-                          class="px-2.5 py-1 text-xs font-semibold text-emerald-300 bg-emerald-900/50 border border-emerald-600/60 rounded-md cursor-default flex items-center gap-1 shadow-sm">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                    ▶ Tocando
+                  <button class="btn-voltar" onclick="voltarParaPendente(${id})" style="background-color: #ffc107; color: #000; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;" title="Desfaz o estado 'Tocando' e volta a música para a fila">
+                    ⏪ Voltar
                   </button>
                 `;
             } else if (isPlayed) {
                 statusBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-700/40 text-gray-400 border border-gray-600/40">Tocado</span>';
                 rowClass = 'opacity-75 hover:opacity-100 hover:bg-gray-800/40 transition-colors';
                 playBtnHtml = `
-                  <button onclick="window.musicRequestsPlayRequest(${id}, '${safeArtist}', '${safeTitle}')"
-                          title="Tocar novamente na pista"
-                          class="px-2.5 py-1 text-xs font-medium text-gray-300 hover:text-white bg-gray-800/60 hover:bg-gray-700 border border-gray-700 rounded-md transition cursor-pointer shadow-sm flex items-center gap-1">
+                  <button class="btn-play px-2.5 py-1 text-xs font-medium text-gray-300 hover:text-white bg-gray-800/60 hover:bg-gray-700 border border-gray-700 rounded-md transition cursor-pointer shadow-sm flex items-center gap-1" onclick="tocarMusica(${id})" title="Tocar novamente na pista">
                     ▶ Tocar
                   </button>
                 `;
             } else {
                 statusBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/30">Pendente</span>';
                 playBtnHtml = `
-                  <button onclick="window.musicRequestsPlayRequest(${id}, '${safeArtist}', '${safeTitle}')"
-                          title="Abrir e tocar na pista do FeedBack"
-                          class="px-2.5 py-1 text-xs font-medium text-emerald-300 hover:text-white bg-emerald-950/40 hover:bg-emerald-800/70 active:bg-emerald-950 border border-emerald-700/50 rounded-md transition cursor-pointer shadow-sm flex items-center gap-1">
+                  <button class="btn-play px-2.5 py-1 text-xs font-medium text-emerald-300 hover:text-white bg-emerald-950/40 hover:bg-emerald-800/70 active:bg-emerald-950 border border-emerald-700/50 rounded-md transition cursor-pointer shadow-sm flex items-center gap-1" onclick="tocarMusica(${id})" title="Abrir e tocar na pista do FeedBack">
                     ▶ Play
                   </button>
                 `;
@@ -210,9 +203,17 @@
             }
         }
     }
+    const carregarPedidos = musicRequestsFetchRequests;
 
     // ── 2. Play Request via API & window.playSong ───────────────────────────
-    async function musicRequestsPlayRequest(id, artist = '', title = '') {
+    async function tocarMusica(id, artist = '', title = '') {
+        if (!artist || !title) {
+            const found = currentRequests.find(r => r.id === id);
+            if (found) {
+                artist = found.artist || '';
+                title = found.title || '';
+            }
+        }
         const songLabel = (artist && title) ? `${artist} - ${title}` : `Pedido #${id}`;
 
         try {
@@ -255,6 +256,40 @@
         } catch (err) {
             console.error(`${Plugin_Label}: Falha ao executar Play no pedido #${id}`, err);
             showAlert('Falha de conexão ao tentar tocar o pedido.', 'error');
+        }
+    }
+    const musicRequestsPlayRequest = tocarMusica;
+
+    // ── 3. Reset Request (playing -> pending) ──────────────────────────────
+    async function voltarParaPendente(id) {
+        try {
+            const response = await fetch(`${API}/reset/${id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'ngrok-skip-browser-warning': 'true'
+                }
+            });
+            const data = await response.json().catch(() => ({}));
+
+            if (response.ok && (data.success || data.ok)) {
+                if (_activeRequestId === id) {
+                    _activeRequestId = null;
+                }
+                showAlert(data.message || 'Pedido revertido para pendente com sucesso!', 'success');
+                // Update in-memory state and refresh table
+                currentRequests.forEach(req => {
+                    if (req.id === id) req.status = 'pending';
+                });
+                renderTable(currentRequests);
+                await carregarPedidos(false);
+            } else {
+                const errMsg = data.error || data.detail || 'Erro ao reverter pedido para pendente.';
+                showAlert(errMsg, 'error');
+            }
+        } catch (err) {
+            console.error(`${Plugin_Label}: Erro ao reverter pedido #${id} para pendente:`, err);
+            showAlert('Falha de conexão ao tentar reverter o pedido.', 'error');
         }
     }
 
@@ -574,7 +609,10 @@
 
     // ── Expose Global Handlers for HTML Buttons ─────────────────────────────
     window.musicRequestsFetchRequests = musicRequestsFetchRequests;
+    window.carregarPedidos = carregarPedidos;
     window.musicRequestsPlayRequest = musicRequestsPlayRequest;
+    window.tocarMusica = tocarMusica;
+    window.voltarParaPendente = voltarParaPendente;
     window.musicRequestsDeleteRequest = musicRequestsDeleteRequest;
     window.musicRequestsSyncCatalog = musicRequestsSyncCatalog;
     window.musicRequestsLoadConfig = musicRequestsLoadConfig;

@@ -1,3 +1,76 @@
 {
-    "requests": []
+    "requests": [
+        {
+            "id": 1,
+            "usuario": "Noob",
+            "artist": "Linkin Park/SimpleGuitar",
+            "title": "Crawling",
+            "status": "played",
+            "created_at": "2026-08-27T18:41:44"
+        },
+        {
+            "id": 2,
+            "usuario": "Noob",
+            "artist": "Three Days Grace",
+            "title": "Animal I Have Become",
+            "status": "played",
+            "created_at": "2026-08-27T18:58:12"
+        },
+        {
+            "id": 3,
+            "usuario": "Noob",
+            "artist": "Queens of the Stone Age",
+            "title": "Go with the Flow",
+            "status": "pending",
+            "created_at": "2026-08-27T19:27:42"
+        },
+        {
+            "id": 4,
+            "usuario": "Noob",
+            "artist": "Queens of the Stone Age",
+            "title": "In My Head",
+            "status": "pending",
+            "created_at": "2026-08-27T19:27:51"
+        },
+        {
+            "id": 5,
+            "usuario": "Noob",
+            "artist": "Oasis",
+            "title": "Rock 'n' Roll Star",
+            "status": "played",
+            "created_at": "2026-08-27T19:44:42"
+        },
+        {
+            "id": 6,
+            "usuario": "Noob",
+            "artist": "Oasis",
+            "title": "Champagne Supernova",
+            "status": "played",
+            "created_at": "2026-08-27T19:45:17"
+        },
+        {
+            "id": 7,
+            "usuario": "Noob",
+            "artist": "12 Stones",
+            "title": "The Way I Feel",
+            "status": "played",
+            "created_at": "2026-08-27T20:09:14"
+        },
+        {
+            "id": 8,
+            "usuario": "Noob",
+            "artist": "Bryan Adams",
+            "title": "Run To You",
+            "status": "played",
+            "created_at": "2026-08-27T20:11:10"
+        },
+        {
+            "id": 9,
+            "usuario": "Noob",
+            "artist": "Deep Purple",
+            "title": "Smoke on the water",
+            "status": "playing",
+            "created_at": "2026-08-27T20:19:37"
+        }
+    ]
 }
